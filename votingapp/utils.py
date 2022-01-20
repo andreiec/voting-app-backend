@@ -1,6 +1,16 @@
 from pymongo import MongoClient
+from bson import json_util
 
-def get_db(db_name, host, port, username, password):
+import json
+
+
+# Parse from BSON to JSON
+def parse_json(data):
+    return json.loads(json_util.dumps(data))
+
+
+# Database connection setup
+def get_db(db_name, host="127.0.0.1", port=27017, username="", password=""):
     client = MongoClient(
         host=host,
         port=int(port),
