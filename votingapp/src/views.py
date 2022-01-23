@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 
 from .serializers import UserSerializer, GroupSerializer
 from .models import User, Group
-from .views_utils import createUser
+from .views_utils import createUser, createGroup
 
 from bson import ObjectId
 from permissions import UsersPermissions
@@ -19,7 +19,7 @@ def baseResponse(request):
     return Response()
 
 
-# User CRUD endpoints done with ViewSet
+# User create, read, update, delete endpoints 
 class UserSet(ViewSet):
     permission_classes = [UsersPermissions]
     queryset = User.objects.all()
@@ -56,22 +56,41 @@ class UserSet(ViewSet):
         }, status=status.HTTP_200_OK))
 
 
-# ENDPOINTS FOR GROUPS
+# Group create, read, update, delete endpoints 
+class GroupSet(ViewSet):
+    permission_classes = [IsAdminUser]
+    queryset = Group.objects.all()
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getGroups(request):
-    groups = Group.objects.all()
-    serializer = GroupSerializer(groups, many=True)
-    return(Response(serializer.data))
+    def list(self, request):
+        serializer = GroupSerializer(self.queryset, many=True)
+        return(Response(serializer.data))
 
 
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getGroup(request, pk):
-    groups = Group.objects.get(_id=ObjectId(pk))
-    serializer = GroupSerializer(groups, many=False)
-    return(Response(serializer.data))
+    def create(self, request):
+        return createGroup(request)
+
+
+    def retrieve(self, request, pk=None):
+        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        serializer = GroupSerializer(group, many=False)
+        return(Response(serializer.data))
+
+
+    def update(self, request, pk=None):
+        pass
+
+
+    def partial_update(self, request, pk=None):
+        pass
+
+
+    def destroy(self, request, pk=None):
+        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        group.delete()
+        return(Response({
+            'detail': 'Group deleted.',
+        }, status=status.HTTP_200_OK))
+
 
 
 @api_view(['GET'])

@@ -12,11 +12,12 @@ from rest_framework_simplejwt.views import (
 )
 
 router = DefaultRouter()
-router.register('users', views.UserSet, basename='users')
+router.register('users', views.UserSet, basename='user')
+router.register('groups', views.GroupSet, basename='group')
 
 urlpatterns = [
-    path('groups/', views.getGroups),
-    path('groups/<str:pk>/', views.getGroup),
+    path('', views.baseResponse),
+
     path('groups/<str:pk>/users/', views.getAllUsersFromGroup),
 
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
