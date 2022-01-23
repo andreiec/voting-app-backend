@@ -1,5 +1,3 @@
-import email
-import profile
 from .models import Profile
 from django.db.models.signals import post_delete, post_save
 from django.contrib.auth.models import User
@@ -22,7 +20,7 @@ def updateUser(sender, instance, created, **kwargs):
     profile = instance
     user = profile.user
     if created == False:
-        user.first_name = profile.fist_name
+        user.first_name = profile.first_name
         user.last_name = profile.last_name
         user.email = profile.email
         user.save()

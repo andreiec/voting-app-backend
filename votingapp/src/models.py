@@ -24,6 +24,7 @@ class Profile(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     user = models.OneToOneField(User, db_column='user', on_delete=models.CASCADE, null=True, blank=True)
+    username = models.CharField(max_length=128, blank=True, null=True)
     group = models.ForeignKey(Group, db_column='group', to_field='_id', on_delete=SET_NULL, null=True, blank=True)
 
     email = models.EmailField(max_length=100, blank=True, null=True)
@@ -34,5 +35,11 @@ class Profile(models.Model):
     is_active = models.BooleanField(default=True, null=False, blank=False)
 
 
+    # Overwrite string display value
     def __str__(self):
         return f"{self.last_name} {self.first_name}"
+
+
+    # Return the string value of group id
+    def get_group_id(self):
+        return str(self.group._id)
