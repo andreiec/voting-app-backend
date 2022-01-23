@@ -4,6 +4,12 @@ from . import views
 
 urlpatterns = [
     path('', views.baseResponse),
+
     path('profiles/', views.getProfiles),
-    path('profiles/<str:pk>', views.getProfile)
+    path('profiles/<str:pk>/', views.getProfile),
+
+    path('groups/', views.getGroups),
+    path('groups/<str:pk>/', views.getGroup),
+
+    path('profiles-from-group/<str:pk>/', views.getAllProfilesFromGroup)
 ]

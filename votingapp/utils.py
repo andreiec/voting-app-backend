@@ -1,22 +1,21 @@
-from pymongo import MongoClient
-from bson import json_util
-
 import json
+from bson import ObjectId
+from rest_framework import serializers
 
 
-# Parse from BSON to JSON
-def parse_json(data):
-    return json.loads(json_util.dumps(data))
+ # JSON Encoder for ObjectId
+class JSONEncoder(json.JSONEncoder):
+    def default(self, item):
+        if isinstance(item, ObjectId):
+            return str(item)
+        return json.JSONEncoder.default(self, item)
 
 
-# Database connection setup
-def get_db(db_name, host="127.0.0.1", port=27017, username="", password=""):
-    client = MongoClient(
-        host=host,
-        port=int(port),
-        username=username,
-        password=password
-    )
-
-    db_handle = client[db_name]
-    return db_handle, client
+# ObjectId JSON Field
+class JSONField(serializers.Field):
+    def to_representation(self, value):
+        try:
+            result = json.dumps(value, skipkeys=True, allow_nan=True,cls=JSONEncoder)
+            return result
+        except ValueError:
+            return ''
