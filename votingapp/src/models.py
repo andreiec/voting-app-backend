@@ -1,9 +1,11 @@
 from djongo import models
 from django.contrib.auth.models import AbstractBaseUser
-from colorfield.fields import ColorField
-from django.db.models.deletion import CASCADE, SET, SET_NULL
-from utils import CustomUserManager
 from django.contrib.auth.hashers import make_password
+from django.db.models.deletion import CASCADE, SET, SET_NULL
+
+from colorfield.fields import ColorField
+from utils import CustomUserManager
+
 
 
 # Base group class

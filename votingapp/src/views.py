@@ -1,9 +1,11 @@
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .serializers import UserSerializer, GroupSerializer
 from .models import User, Group
+from .views_utils import createUser
 
 from bson import ObjectId
 
@@ -15,12 +17,17 @@ def baseResponse(request):
 
 # USERS
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def getUsers(request):
-    users = User.objects.all()
-    serializer = UserSerializer(users, many=True)
-    return(Response(serializer.data))
+
+    if request.method == 'GET':
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return(Response(serializer.data))
+
+    elif request.method == 'POST':
+        return createUser(request)
 
 
 @api_view(['GET'])
