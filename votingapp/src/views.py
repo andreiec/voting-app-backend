@@ -13,6 +13,8 @@ def baseResponse(request):
     return Response()
 
 
+# USERS
+
 @api_view(['GET'])
 def getUsers(request):
     users = User.objects.all()
@@ -26,6 +28,8 @@ def getUser(request, pk):
     serializer = UserSerializer(user, many=False)
     return(Response(serializer.data))
 
+
+# GROUPS
 
 @api_view(['GET'])
 def getGroups(request):
@@ -41,8 +45,8 @@ def getGroup(request, pk):
     return(Response(serializer.data))
 
 
-# @api_view(['GET'])
-# def getAllProfilesFromGroup(request, pk):
-#     profiles = Profile.objects.filter(group___id=ObjectId(pk))
-#     serializer = ProfileSerializer(profiles, many=True)
-#     return(Response(serializer.data))
+@api_view(['GET'])
+def getAllUsersFromGroup(request, pk):
+    profiles = User.objects.filter(group___id=ObjectId(pk))
+    serializer = UserSerializer(profiles, many=True)
+    return(Response(serializer.data))
