@@ -12,4 +12,4 @@ class UserSerializer(serializers.ModelSerializer):
     group = serializers.CharField(source='get_group_id')
     class Meta:
         model = User
-        fields = "__all__"
+        fields = ['_id', 'email', 'first_name', 'last_name', 'group', 'date_joined', 'last_login', 'is_staff']

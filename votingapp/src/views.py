@@ -13,6 +13,19 @@ def baseResponse(request):
     return Response()
 
 
+@api_view(['GET'])
+def getUsers(request):
+    users = User.objects.all()
+    serializer = UserSerializer(users, many=True)
+    return(Response(serializer.data))
+
+
+@api_view(['GET'])
+def getUser(request, pk):
+    user = User.objects.get(_id=ObjectId(pk))
+    serializer = UserSerializer(user, many=False)
+    return(Response(serializer.data))
+
 
 @api_view(['GET'])
 def getGroups(request):

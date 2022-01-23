@@ -59,7 +59,9 @@ class User(AbstractBaseUser):
 
     # Return the string value of group id
     def get_group_id(self):
-        return str(self.group._id)
+        if self.group is not None:
+            return str(self.group._id)
+        return None
 
 
     # Return the string value of id
