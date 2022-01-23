@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Profile, Group
+from .models import User, Group
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -8,8 +8,8 @@ class GroupSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     group = serializers.CharField(source='get_group_id')
     class Meta:
-        model = Profile
+        model = User
         fields = "__all__"

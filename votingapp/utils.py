@@ -1,21 +1,39 @@
-import json
-from bson import ObjectId
-from rest_framework import serializers
+from django.contrib.auth.models import BaseUserManager
 
 
- # JSON Encoder for ObjectId
-class JSONEncoder(json.JSONEncoder):
-    def default(self, item):
-        if isinstance(item, ObjectId):
-            return str(item)
-        return json.JSONEncoder.default(self, item)
+# Custom User Manager
+class CustomUserManager(BaseUserManager):
+    use_in_migrations = True
+
+    def _create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Users must have an email address")
+
+        user = self.model(
+            email=self.normalize_email(email),
+            **extra_fields
+        )
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
 
 
-# ObjectId JSON Field
-class JSONField(serializers.Field):
-    def to_representation(self, value):
-        try:
-            result = json.dumps(value, skipkeys=True, allow_nan=True,cls=JSONEncoder)
-            return result
-        except ValueError:
-            return ''
+    def create_user(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, password, **extra_fields)
+
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        user = self.create_user(
+            email=self.normalize_email(email),
+            **extra_fields
+        )
+
+        user.is_admin = True
+        user.is_staff = True
+        user.is_superuser = True
+
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
