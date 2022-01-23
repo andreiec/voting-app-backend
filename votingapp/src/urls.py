@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include
+
+from rest_framework.routers import DefaultRouter
+
 from . import views
 
 # Import token libraries
@@ -8,13 +11,10 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
+router = DefaultRouter()
+router.register('users', views.UserSet, basename='users')
 
 urlpatterns = [
-    path('', views.baseResponse),
-
-    path('users/', views.getUsers),
-    path('users/<str:pk>/', views.getUser),
-
     path('groups/', views.getGroups),
     path('groups/<str:pk>/', views.getGroup),
     path('groups/<str:pk>/users/', views.getAllUsersFromGroup),
@@ -22,3 +22,5 @@ urlpatterns = [
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
+
+urlpatterns += router.urls
