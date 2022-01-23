@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from colorfield.fields import ColorField
 from django.db.models.deletion import CASCADE, SET, SET_NULL
 from utils import CustomUserManager
+from django.contrib.auth.hashers import make_password
 
 
 # Base group class
@@ -55,6 +56,10 @@ class User(AbstractBaseUser):
     
     def has_module_perms(self, app_label):
         return True
+
+
+    def validate_password(self, value):
+        return make_password(value)
 
 
     # Return the string value of group id

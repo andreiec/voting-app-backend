@@ -1,6 +1,6 @@
-from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from .serializers import UserSerializer, GroupSerializer
 from .models import User, Group
@@ -16,6 +16,7 @@ def baseResponse(request):
 # USERS
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getUsers(request):
     users = User.objects.all()
     serializer = UserSerializer(users, many=True)
@@ -23,6 +24,7 @@ def getUsers(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getUser(request, pk):
     user = User.objects.get(_id=ObjectId(pk))
     serializer = UserSerializer(user, many=False)
@@ -32,6 +34,7 @@ def getUser(request, pk):
 # GROUPS
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getGroups(request):
     groups = Group.objects.all()
     serializer = GroupSerializer(groups, many=True)
@@ -39,6 +42,7 @@ def getGroups(request):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getGroup(request, pk):
     groups = Group.objects.get(_id=ObjectId(pk))
     serializer = GroupSerializer(groups, many=False)
@@ -46,6 +50,7 @@ def getGroup(request, pk):
 
 
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getAllUsersFromGroup(request, pk):
     profiles = User.objects.filter(group___id=ObjectId(pk))
     serializer = UserSerializer(profiles, many=True)
