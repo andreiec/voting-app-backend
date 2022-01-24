@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
 
@@ -13,13 +14,15 @@ from bson import ObjectId
 # Create user from post request
 def createUser(request):
 
+    # Get data from post request
     data = request.POST
     email = data.get('email', False)
     password = data.get('password', False)
     group = data.get('group', False)
+    is_staff = data.get('is_staff', False)
 
     # Check if data contains email and password
-    if not email and not password:
+    if not email or not password:
         return(Response({
             'detail': 'Missing data from sender.',
         }, status=status.HTTP_400_BAD_REQUEST))
@@ -30,33 +33,62 @@ def createUser(request):
             'detail': 'Mail already exists.',
         }, status=status.HTTP_400_BAD_REQUEST))
 
-    # Create user model with data
-    user = User(
-        email=email,
-        first_name=data.get('first_name', ""),
-        last_name=data.get('last_name', ""),
-    )
+    # Create unique id for user
+    _id = ObjectId()
 
-    # Check if user is_staff
-    if data.get('is_staff', False):
-        if data.get('is_staff') == "True":
-            user.is_staff = True
-        else:
-            user.is_staff = False
+    # Create user dict with data for serialization
+    user_data = {
+        'email': email,
+        'first_name': data.get('first_name', ""),
+        'last_name': data.get('last_name', ""),
+        '_id': str(_id),
+        'date_joined': str(timezone.now()),
+        'last_login': str(timezone.now()),
+        'is_staff': is_staff == "True",
+    }
 
     # Set group if exists.
+    group_obj = None
+
     if group:
-        group_obj = get_object_or_404(Group.objects.all(), pk=ObjectId(group))
-        user.group = group_obj
+        try:
+            group_pk = ObjectId(group)
+        except:
+            return(Response({
+                'detail': 'Bad group id.',
+            }, status=status.HTTP_400_BAD_REQUEST))
 
-    # Set password
-    user.set_password(password)
-    
-    # Save model in db
-    user.save()
+        group_obj = get_object_or_404(Group.objects.all(), pk=group_pk)
 
-    serializer = UserSerializer(user, many=False)
-    return(Response(serializer.data))
+    # Serialize user
+    serializer = UserSerializer(data=user_data, many=False, partial=True)
+
+    # Save model in db if it is valid
+    if serializer.is_valid():
+        
+        user = User(
+            _id=_id,
+            email=user_data['email'],
+            date_joined=user_data['date_joined'],
+            last_login=user_data['last_login'],
+            is_staff=user_data['is_staff'],
+            first_name=user_data['first_name'],
+            last_name=user_data['last_name'],
+            group=group_obj
+        )
+
+        # Set user password and save
+        user.set_password(password)
+        user.save()
+
+        return(Response({
+            'detail': 'User created.',
+        }, status=status.HTTP_200_OK))
+
+    # Serializer was not valid
+    return(Response({
+        'detail': 'Bad request.',
+    }, status=status.HTTP_400_BAD_REQUEST))
 
 
 def createGroup(request):

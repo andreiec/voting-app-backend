@@ -55,7 +55,7 @@ class UserSet(ViewSet):
             serializer.save()
             return(Response({
                 'detail': 'User updated.',
-            }, status=status.HTTP_202_ACCEPTED))
+            }, status=status.HTTP_200_OK))
 
         # Serializer was not valid
         return(Response({
@@ -113,7 +113,7 @@ class GroupSet(ViewSet):
             serializer.save()
             return(Response({
                 'detail': 'Group updated.',
-            }, status=status.HTTP_202_ACCEPTED))
+            }, status=status.HTTP_200_OK))
 
         # Serializer was not valid
         return(Response({
