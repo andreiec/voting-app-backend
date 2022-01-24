@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import User, Group
 
+from bson import ObjectId
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:

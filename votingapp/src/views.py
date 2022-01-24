@@ -41,11 +41,33 @@ class UserSet(ViewSet):
 
 
     def update(self, request, pk=None):
-        pass
+        user = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        serializer = UserSerializer(user, data=request.data, partial=True)
+
+        # Check if request wants to modify _id
+        if request.data.get('_id', False):
+            return(Response({
+            'detail': 'Cannot change id.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+        # If serializer is valid
+        if serializer.is_valid():
+            serializer.save()
+            return(Response({
+                'detail': 'User updated.',
+            }, status=status.HTTP_202_ACCEPTED))
+
+        # Serializer was not valid
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
+    # Who uses PATCH request anyways?
     def partial_update(self, request, pk=None):
-        pass
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
     def destroy(self, request, pk=None):
@@ -77,11 +99,33 @@ class GroupSet(ViewSet):
 
 
     def update(self, request, pk=None):
-        pass
+        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        serializer = GroupSerializer(group, data=request.data, partial=True)
+
+        # Check if request wants to modify _id
+        if request.data.get('_id', False):
+            return(Response({
+            'detail': 'Cannot change id.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+        # If serializer is valid
+        if serializer.is_valid():
+            serializer.save()
+            return(Response({
+                'detail': 'Group updated.',
+            }, status=status.HTTP_202_ACCEPTED))
+
+        # Serializer was not valid
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
+    # Who uses PATCH request anyways?
     def partial_update(self, request, pk=None):
-        pass
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
     def destroy(self, request, pk=None):

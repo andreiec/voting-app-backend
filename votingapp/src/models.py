@@ -10,7 +10,7 @@ from utils import CustomUserManager
 
 # Base group class
 class Group(models.Model):
-    _id = models.ObjectIdField()
+    _id = models.ObjectIdField(editable=False)
     created = models.DateTimeField(auto_now_add=True)
     
     name = models.CharField(max_length=128, null=True, blank=False, unique=True)
@@ -26,7 +26,7 @@ class Group(models.Model):
 class User(AbstractBaseUser):
     
     # Base fields of Abstract User
-    _id = models.ObjectIdField()
+    _id = models.ObjectIdField(editable=False)
     email = models.EmailField(verbose_name='email', max_length=120, unique=True)
     username = None
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
