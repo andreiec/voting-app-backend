@@ -75,17 +75,61 @@ class Election(models.Model):
     title = models.CharField(max_length=255, null=True, blank=False)
     description = models.TextField(max_length=4000, null=True, blank=True)
 
-    voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-    voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
-    archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
+    voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
+    archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
 
     accepts_votes = models.BooleanField(default=True)
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
 
     number_of_polls = models.IntegerField(blank=False, null=False)
-    # groups = models.EmbeddedField(model_container=ElectionGroup)
+    groups = models.ManyToManyField('Group', blank=True)
 
 
     def __str__(self):
         return self.title
+
+
+# Base class for question inside of Election
+class Question(models.Model):
+    SELECTION_CHOICES = [
+        ('0', 'single_select'),
+        ('1', 'multiple_select')
+    ]
+
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, null=True, blank=True)
+
+    title = models.CharField(max_length=255, null=True, blank=False)
+    description = models.TextField(max_length=4000, null=True, blank=True)
+    selection_type = models.CharField(max_length=15, choices=SELECTION_CHOICES, default='single_select')
+
+    def __str__(self):
+        return self.title
+
+
+# Base class for Option
+class Option(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
+
+    value = models.CharField(max_length=255, null=True, blank=False)
+
+
+    def __str__(self):
+        return self.value
+
+
+# Base class for a vote
+class Vote(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE, null=False, blank=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [['user', 'option']]
+
+
+    def __str__(self):
+        return self.user + self.option
