@@ -43,8 +43,8 @@ class UserSet(ViewSet):
         user = get_object_or_404(self.queryset, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
 
-        # Check if request wants to modify _id
-        if request.data.get('_id', False):
+        # Check if request wants to modify id
+        if request.data.get('id', False):
             return(Response({
             'detail': 'Cannot change id.',
         }, status=status.HTTP_400_BAD_REQUEST))
@@ -101,8 +101,8 @@ class GroupSet(ViewSet):
         group = get_object_or_404(self.queryset, pk=pk)
         serializer = GroupSerializer(group, data=request.data, partial=True)
 
-        # Check if request wants to modify _id
-        if request.data.get('_id', False):
+        # Check if request wants to modify id
+        if request.data.get('id', False):
             return(Response({
             'detail': 'Cannot change id.',
         }, status=status.HTTP_400_BAD_REQUEST))

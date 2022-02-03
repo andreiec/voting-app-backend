@@ -27,7 +27,7 @@ class Group(models.Model):
 class User(AbstractBaseUser):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     email = models.EmailField(verbose_name='email', max_length=120, unique=True)
-    
+
     username = None
 
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
@@ -63,14 +63,6 @@ class User(AbstractBaseUser):
 
     def validate_password(self, value):
         return make_password(value)
-
-
-    # # Return the string value of group id
-    # def get_group_id(self):
-    #     if self.group is not None:
-    #         return str(self.group.id)
-    #     return None
-
 
 
 

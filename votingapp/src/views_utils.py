@@ -47,18 +47,20 @@ def createUser(request):
         'is_staff': is_staff == "True",
     }
 
-    # Set group if exists.
-    group_obj = None
-
+    # If group is transmited through the body, check if it exists
     if group:
+
+        # Check if id is a valid uuid
         try:
-            group_pk = uuid.uuid4(group)
+            group_pk = uuid.UUID(group, version=4)
         except:
             return(Response({
                 'detail': 'Bad group id.',
             }, status=status.HTTP_400_BAD_REQUEST))
 
+        # Check if group exists
         group_obj = get_object_or_404(Group.objects.all(), pk=group_pk)
+
 
     # Serialize user
     serializer = UserSerializer(data=user_data, many=False, partial=True)
