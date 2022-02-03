@@ -68,13 +68,13 @@ def createUser(request):
         
         user = User(
             _id=_id,
+            group=group_obj,
             email=user_data['email'],
             date_joined=user_data['date_joined'],
             last_login=user_data['last_login'],
             is_staff=user_data['is_staff'],
             first_name=user_data['first_name'],
-            last_name=user_data['last_name'],
-            group=group_obj
+            last_name=user_data['last_name']
         )
 
         # Set user password and save
@@ -83,7 +83,7 @@ def createUser(request):
 
         return(Response({
             'detail': 'User created.',
-        }, status=status.HTTP_200_OK))
+        }, status=status.HTTP_201_CREATED))
 
     # Serializer was not valid
     return(Response({

@@ -74,3 +74,42 @@ class User(AbstractBaseUser):
     # Return the string value of id
     def get_id(self):
         return str(self._id)
+
+
+# Embedded field for Group
+class ElectionGroup(models.Model):
+    name = models.CharField(max_length=128, null=True, blank=False)
+
+    users_set = models.ArrayReferenceField(
+        to=User,
+        on_delete=models.DO_NOTHING
+    )
+
+    class Meta:
+        abstract = True
+
+
+# Class for election
+class Election(models.Model):
+    _id = models.ObjectIdField(editable=False)
+    created = models.DateTimeField(auto_now_add=True)
+
+    owner = models.ForeignKey(User, db_column='owner', to_field='_id', on_delete=SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=256, null=True, blank=False, unique=True)
+    description = models.TextField(max_length=4000, null=True, blank=True)
+
+    voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+    archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
+
+    accepts_votes = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=True)
+    is_archived = models.BooleanField(default=False)
+
+    number_of_polls = models.IntegerField(blank=False, null=False)
+    # polls =
+    groups = models.EmbeddedField(model_container=ElectionGroup)
+
+
+    def __str__(self):
+        return self.title
