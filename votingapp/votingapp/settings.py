@@ -120,12 +120,15 @@ WSGI_APPLICATION = 'votingapp.wsgi.application'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
 DATABASES = {
-     'default': {
-         'ENGINE': 'djongo',
-         'NAME': 'votingapp',
-     }
- }
-
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'votingapp',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+        'USER': 'andreiec',
+        'PASSWORD': 'panda11022001',
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

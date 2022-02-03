@@ -10,7 +10,6 @@ from .serializers import UserSerializer, GroupSerializer
 from .models import User, Group
 from .views_utils import createUser, createGroup
 
-from bson import ObjectId
 from permissions import UsersPermissions
 
 
@@ -35,13 +34,13 @@ class UserSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        user = get_object_or_404(self.queryset, pk=pk)
         serializer = UserSerializer(user, many=False)
         return(Response(serializer.data))
 
 
     def update(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        user = get_object_or_404(self.queryset, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
 
         # Check if request wants to modify _id
@@ -71,7 +70,7 @@ class UserSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        user = get_object_or_404(self.queryset, pk=pk)
         user.delete()
         return(Response({
             'detail': 'User deleted.',
@@ -93,13 +92,13 @@ class GroupSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        group = get_object_or_404(self.queryset, pk=pk)
         serializer = GroupSerializer(group, many=False)
         return(Response(serializer.data))
 
 
     def update(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        group = get_object_or_404(self.queryset, pk=pk)
         serializer = GroupSerializer(group, data=request.data, partial=True)
 
         # Check if request wants to modify _id
@@ -129,7 +128,7 @@ class GroupSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=ObjectId(pk))
+        group = get_object_or_404(self.queryset, pk=pk)
         group.delete()
         return(Response({
             'detail': 'Group deleted.',
@@ -140,6 +139,6 @@ class GroupSet(ViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getAllUsersFromGroup(request, pk):
-    profiles = User.objects.filter(group___id=ObjectId(pk))
+    profiles = User.objects.filter(group__id=pk)
     serializer = UserSerializer(profiles, many=True)
     return(Response(serializer.data))

@@ -8,7 +8,7 @@ from src.models import User, Group
 from src.serializers import UserSerializer, GroupSerializer
 
 
-from bson import ObjectId
+import uuid
 
 
 # Create user from post request
@@ -34,14 +34,14 @@ def createUser(request):
         }, status=status.HTTP_400_BAD_REQUEST))
 
     # Create unique id for user
-    _id = ObjectId()
+    id = uuid.uuid4()
 
     # Create user dict with data for serialization
     user_data = {
         'email': email,
         'first_name': data.get('first_name', ""),
         'last_name': data.get('last_name', ""),
-        '_id': str(_id),
+        'id': id,
         'date_joined': str(timezone.now()),
         'last_login': str(timezone.now()),
         'is_staff': is_staff == "True",
@@ -52,7 +52,7 @@ def createUser(request):
 
     if group:
         try:
-            group_pk = ObjectId(group)
+            group_pk = uuid.uuid4(group)
         except:
             return(Response({
                 'detail': 'Bad group id.',
@@ -67,7 +67,7 @@ def createUser(request):
     if serializer.is_valid():
         
         user = User(
-            _id=_id,
+            id=id,
             group=group_obj,
             email=user_data['email'],
             date_joined=user_data['date_joined'],

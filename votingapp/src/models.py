@@ -1,4 +1,4 @@
-from djongo import models
+from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.db.models.deletion import CASCADE, SET, SET_NULL
@@ -6,11 +6,12 @@ from django.db.models.deletion import CASCADE, SET, SET_NULL
 from colorfield.fields import ColorField
 from utils import CustomUserManager
 
+import uuid
 
 
 # Base group class
 class Group(models.Model):
-    _id = models.ObjectIdField(editable=False)
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     created = models.DateTimeField(auto_now_add=True)
     
     name = models.CharField(max_length=128, null=True, blank=False, unique=True)
@@ -24,11 +25,11 @@ class Group(models.Model):
 
 # Custom user model
 class User(AbstractBaseUser):
-    
-    # Base fields of Abstract User
-    _id = models.ObjectIdField(editable=False)
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     email = models.EmailField(verbose_name='email', max_length=120, unique=True)
+    
     username = None
+
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
     is_admin = models.BooleanField(default=False)
@@ -45,7 +46,7 @@ class User(AbstractBaseUser):
     profile_picture = models.ImageField(max_length=255, upload_to='profile_pictures/', null=True, blank=True, default='profile_pictures/default-user.png')
     first_name = models.CharField(max_length=60, null=True, blank=True)
     last_name = models.CharField(max_length=60, null=True, blank=True)
-    group = models.ForeignKey(Group, db_column='group', to_field='_id', on_delete=SET_NULL, null=True, blank=True)
+    group = models.ForeignKey(Group, on_delete=SET_NULL, null=True, blank=True)
 
 
     def __str__(self):
@@ -64,38 +65,22 @@ class User(AbstractBaseUser):
         return make_password(value)
 
 
-    # Return the string value of group id
-    def get_group_id(self):
-        if self.group is not None:
-            return str(self.group._id)
-        return None
+    # # Return the string value of group id
+    # def get_group_id(self):
+    #     if self.group is not None:
+    #         return str(self.group.id)
+    #     return None
 
 
-    # Return the string value of id
-    def get_id(self):
-        return str(self._id)
-
-
-# Embedded field for Group
-class ElectionGroup(models.Model):
-    name = models.CharField(max_length=128, null=True, blank=False)
-
-    users_set = models.ArrayReferenceField(
-        to=User,
-        on_delete=models.DO_NOTHING
-    )
-
-    class Meta:
-        abstract = True
 
 
 # Class for election
 class Election(models.Model):
-    _id = models.ObjectIdField(editable=False)
+    id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
     created = models.DateTimeField(auto_now_add=True)
 
-    owner = models.ForeignKey(User, db_column='owner', to_field='_id', on_delete=SET_NULL, null=True, blank=True)
-    title = models.CharField(max_length=256, null=True, blank=False, unique=True)
+    owner = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=255, null=True, blank=False)
     description = models.TextField(max_length=4000, null=True, blank=True)
 
     voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True)
@@ -107,8 +92,7 @@ class Election(models.Model):
     is_archived = models.BooleanField(default=False)
 
     number_of_polls = models.IntegerField(blank=False, null=False)
-    # polls =
-    groups = models.EmbeddedField(model_container=ElectionGroup)
+    # groups = models.EmbeddedField(model_container=ElectionGroup)
 
 
     def __str__(self):
