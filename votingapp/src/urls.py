@@ -14,6 +14,7 @@ from rest_framework_simplejwt.views import (
 router = DefaultRouter()
 router.register('users', views.UserSet, basename='user')
 router.register('groups', views.GroupSet, basename='group')
+router.register('elections', views.ElectionSet, basename='election')
 
 urlpatterns = [
     path('', views.baseResponse),

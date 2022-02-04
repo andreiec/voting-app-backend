@@ -16,9 +16,9 @@ def createUser(request):
 
     # Get data from post request
     data = request.POST
-    email = data.get('email', False)
-    password = data.get('password', False)
-    group = data.get('group', False)
+    email = data.get('email', None)
+    password = data.get('password', None)
+    group = data.get('group', None)
     is_staff = data.get('is_staff', False)
 
     # Check if data contains email and password
@@ -33,24 +33,18 @@ def createUser(request):
             'detail': 'Mail already exists.',
         }, status=status.HTTP_400_BAD_REQUEST))
 
-    # Create unique id for user
-    id = uuid.uuid4()
-
     # Create user dict with data for serialization
     user_data = {
         'email': email,
         'first_name': data.get('first_name', ""),
         'last_name': data.get('last_name', ""),
-        'id': id,
         'date_joined': str(timezone.now()),
         'last_login': str(timezone.now()),
         'is_staff': is_staff == "True",
     }
 
-    # If group is transmited through the body, check if it exists
+    # Get group if exists
     if group:
-
-        # Check if id is a valid uuid
         try:
             group_pk = uuid.UUID(group, version=4)
         except:
@@ -60,7 +54,8 @@ def createUser(request):
 
         # Check if group exists
         group_obj = get_object_or_404(Group.objects.all(), pk=group_pk)
-
+    else:
+        group_obj = None
 
     # Serialize user
     serializer = UserSerializer(data=user_data, many=False, partial=True)
@@ -69,7 +64,6 @@ def createUser(request):
     if serializer.is_valid():
         
         user = User(
-            id=id,
             group=group_obj,
             email=user_data['email'],
             date_joined=user_data['date_joined'],

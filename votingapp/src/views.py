@@ -6,8 +6,8 @@ from rest_framework.viewsets import ViewSet
 
 from django.shortcuts import get_object_or_404
 
-from .serializers import UserSerializer, GroupSerializer
-from .models import User, Group
+from .serializers import SingleElectionSerializer, MultipleElectionSerializer, UserSerializer, GroupSerializer
+from .models import Election, User, Group
 from .views_utils import createUser, createGroup
 
 from permissions import UsersPermissions
@@ -142,3 +142,32 @@ def getAllUsersFromGroup(request, pk):
     profiles = User.objects.filter(group__id=pk)
     serializer = UserSerializer(profiles, many=True)
     return(Response(serializer.data))
+
+
+class ElectionSet(ViewSet):
+    permission_classes = [IsAdminUser]
+    queryset = Election.objects.all()
+
+    def list(self, request):
+        serializer = MultipleElectionSerializer(self.queryset, many=True)
+        return(Response(serializer.data))
+
+
+    def create(self, request):
+        pass
+
+
+    def retrieve(self, request, pk=None):
+        election = get_object_or_404(self.queryset, pk=pk)
+        serializer = SingleElectionSerializer(election, many=False)
+        return(Response(serializer.data))
+
+
+    def update(self, request, pk=None):
+        pass
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        pass
