@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
 from django.db.models.deletion import CASCADE, SET, SET_NULL
+from django.core.validators import MaxValueValidator
 
 from colorfield.fields import ColorField
 from utils import CustomUserManager
@@ -83,7 +84,7 @@ class Election(models.Model):
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
 
-    number_of_polls = models.IntegerField(blank=False, null=False)
+    number_of_polls = models.PositiveIntegerField(blank=False, null=False, validators=[MaxValueValidator(100)])
     groups = models.ManyToManyField('Group', blank=True)
 
 
@@ -94,8 +95,8 @@ class Election(models.Model):
 # Base class for question inside of Election
 class Question(models.Model):
     SELECTION_CHOICES = [
-        ('0', 'single_select'),
-        ('1', 'multiple_select')
+        ('single', 'Single Select'),
+        ('multiple', 'Multiple Select')
     ]
 
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
