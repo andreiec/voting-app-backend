@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 
 from .serializers import SingleElectionSerializer, MultipleElectionSerializer, UserSerializer, GroupSerializer
 from .models import Election, User, Group
-from .views_utils import createUser, createGroup
+from .views_utils import createUser, createGroup, createElection
 
 from permissions import UsersPermissions
 
@@ -148,13 +148,14 @@ class ElectionSet(ViewSet):
     permission_classes = [IsAdminUser]
     queryset = Election.objects.all()
 
+
     def list(self, request):
         serializer = MultipleElectionSerializer(self.queryset, many=True)
         return(Response(serializer.data))
 
 
     def create(self, request):
-        pass
+        return createElection(request)
 
 
     def retrieve(self, request, pk=None):
@@ -166,8 +167,17 @@ class ElectionSet(ViewSet):
     def update(self, request, pk=None):
         pass
 
+
+    # Who uses PATCH request anyways?
     def partial_update(self, request, pk=None):
-        pass
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
 
     def destroy(self, request, pk=None):
-        pass
+        election = get_object_or_404(self.queryset, pk=pk)
+        election.delete()
+        return(Response({
+            'detail': 'Election deleted.',
+        }, status=status.HTTP_200_OK))

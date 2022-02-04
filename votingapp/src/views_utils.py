@@ -108,3 +108,8 @@ def createGroup(request):
 
     serializer = GroupSerializer(group, many=False)
     return(Response(serializer.data))
+
+
+# Create election from post request
+def createElection(request):
+    return(Response({'detail': 'OK'}, status=status.HTTP_200_OK))

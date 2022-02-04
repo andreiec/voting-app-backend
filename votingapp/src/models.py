@@ -84,12 +84,16 @@ class Election(models.Model):
     is_active = models.BooleanField(default=True)
     is_archived = models.BooleanField(default=False)
 
-    number_of_polls = models.PositiveIntegerField(blank=False, null=False, validators=[MaxValueValidator(100)])
+    number_of_polls = models.PositiveSmallIntegerField(blank=False, null=False, validators=[MaxValueValidator(100)])
     groups = models.ManyToManyField('Group', blank=True)
 
 
     def __str__(self):
         return self.title
+
+
+    class Meta:
+        ordering = ['created']
 
 
 # Base class for question inside of Election
@@ -105,9 +109,14 @@ class Question(models.Model):
     title = models.CharField(max_length=255, null=True, blank=False)
     description = models.TextField(max_length=4000, null=True, blank=True)
     selection_type = models.CharField(max_length=15, choices=SELECTION_CHOICES, default='single_select')
+    order = models.PositiveSmallIntegerField(blank=False, null=False, default=0, validators=[MaxValueValidator(100)])
 
     def __str__(self):
         return self.title
+
+
+    class Meta:
+        ordering = ['order']
 
 
 # Base class for Option
@@ -116,10 +125,14 @@ class Option(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True, blank=True)
 
     value = models.CharField(max_length=255, null=True, blank=False)
-
+    order = models.PositiveSmallIntegerField(blank=False, null=False, default=0, validators=[MaxValueValidator(100)])
 
     def __str__(self):
         return self.value
+
+
+    class Meta:
+        ordering = ['order']
 
 
 # Base class for a vote
