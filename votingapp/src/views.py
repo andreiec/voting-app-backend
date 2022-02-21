@@ -21,11 +21,12 @@ def baseResponse(request):
 # User create, read, update, delete endpoints 
 class UserSet(ViewSet):
     permission_classes = [UsersPermissions]
-    queryset = User.objects.all()
+    # queryset = User.objects.all()
 
 
     def list(self, request):
-        serializer = UserSerializer(self.queryset, many=True)
+        queryset = User.objects.all()
+        serializer = UserSerializer(queryset, many=True)
         return(Response(serializer.data))
 
 
@@ -34,13 +35,15 @@ class UserSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=pk)
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
         serializer = UserSerializer(user, many=False)
         return(Response(serializer.data))
 
 
     def update(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=pk)
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
 
         # Check if request wants to modify id
@@ -70,7 +73,8 @@ class UserSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
-        user = get_object_or_404(self.queryset, pk=pk)
+        queryset = User.objects.all()
+        user = get_object_or_404(queryset, pk=pk)
         user.delete()
         return(Response({
             'detail': 'User deleted.',
@@ -80,10 +84,11 @@ class UserSet(ViewSet):
 # Group create, read, update, delete endpoints 
 class GroupSet(ViewSet):
     permission_classes = [IsAdminUser]
-    queryset = Group.objects.all()
+    # queryset = Group.objects.all()
 
     def list(self, request):
-        serializer = GroupSerializer(self.queryset, many=True)
+        queryset = Group.objects.all()
+        serializer = GroupSerializer(queryset, many=True)
         return(Response(serializer.data))
 
 
@@ -92,13 +97,15 @@ class GroupSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=pk)
+        queryset = Group.objects.all()
+        group = get_object_or_404(queryset, pk=pk)
         serializer = GroupSerializer(group, many=False)
         return(Response(serializer.data))
 
 
     def update(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=pk)
+        queryset = Group.objects.all()
+        group = get_object_or_404(queryset, pk=pk)
         serializer = GroupSerializer(group, data=request.data, partial=True)
 
         # Check if request wants to modify id
@@ -128,7 +135,8 @@ class GroupSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
-        group = get_object_or_404(self.queryset, pk=pk)
+        queryset = Group.objects.all()
+        group = get_object_or_404(queryset, pk=pk)
         group.delete()
         return(Response({
             'detail': 'Group deleted.',
@@ -145,12 +153,13 @@ def getAllUsersFromGroup(request, pk):
 
 
 class ElectionSet(ViewSet):
-    permission_classes = [IsAdminUser]
-    queryset = Election.objects.all()
+    permission_classes = []
+    # queryset = Election.objects.all()
 
 
     def list(self, request):
-        serializer = MultipleElectionSerializer(self.queryset, many=True)
+        queryset = Election.objects.all()
+        serializer = MultipleElectionSerializer(queryset, many=True)
         return(Response(serializer.data))
 
 
@@ -159,7 +168,8 @@ class ElectionSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
-        election = get_object_or_404(self.queryset, pk=pk)
+        queryset = Election.objects.all()
+        election = get_object_or_404(queryset, pk=pk)
         serializer = SingleElectionSerializer(election, many=False)
         return(Response(serializer.data))
 
@@ -176,7 +186,8 @@ class ElectionSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
-        election = get_object_or_404(self.queryset, pk=pk)
+        queryset = Election.objects.all()
+        election = get_object_or_404(queryset, pk=pk)
         election.delete()
         return(Response({
             'detail': 'Election deleted.',
