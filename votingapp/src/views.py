@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.viewsets import ViewSet
+from rest_framework.authentication import TokenAuthentication
 
 from django.shortcuts import get_object_or_404
 
@@ -10,7 +11,8 @@ from .serializers import SingleElectionSerializer, MultipleElectionSerializer, U
 from .models import Election, User, Group
 from .views_utils import createUser, createGroup, createElection
 
-from permissions import UsersPermissions
+from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
+import uuid
 
 
 @api_view(['GET'])
@@ -21,6 +23,7 @@ def baseResponse(request):
 # User create, read, update, delete endpoints 
 class UserSet(ViewSet):
     permission_classes = [UsersPermissions]
+    # authentication_classes = [TokenAuthentication]
     # queryset = User.objects.all()
 
 
@@ -35,6 +38,14 @@ class UserSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         serializer = UserSerializer(user, many=False)
@@ -42,6 +53,14 @@ class UserSet(ViewSet):
 
 
     def update(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
@@ -73,6 +92,14 @@ class UserSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         user.delete()
@@ -83,7 +110,8 @@ class UserSet(ViewSet):
 
 # Group create, read, update, delete endpoints 
 class GroupSet(ViewSet):
-    permission_classes = [IsAdminUser]
+    permission_classes = [GroupsPermissions]
+    # authentication_classes = [TokenAuthentication]
     # queryset = Group.objects.all()
 
     def list(self, request):
@@ -97,6 +125,14 @@ class GroupSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = Group.objects.all()
         group = get_object_or_404(queryset, pk=pk)
         serializer = GroupSerializer(group, many=False)
@@ -104,6 +140,14 @@ class GroupSet(ViewSet):
 
 
     def update(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = Group.objects.all()
         group = get_object_or_404(queryset, pk=pk)
         serializer = GroupSerializer(group, data=request.data, partial=True)
@@ -135,6 +179,14 @@ class GroupSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = Group.objects.all()
         group = get_object_or_404(queryset, pk=pk)
         group.delete()
@@ -153,7 +205,8 @@ def getAllUsersFromGroup(request, pk):
 
 
 class ElectionSet(ViewSet):
-    permission_classes = []
+    permission_classes = [ElectionsPermissions]
+    # authentication_classes = [TokenAuthentication]
     # queryset = Election.objects.all()
 
 
@@ -168,6 +221,14 @@ class ElectionSet(ViewSet):
 
 
     def retrieve(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = Election.objects.all()
         election = get_object_or_404(queryset, pk=pk)
         serializer = SingleElectionSerializer(election, many=False)
@@ -186,6 +247,14 @@ class ElectionSet(ViewSet):
 
 
     def destroy(self, request, pk=None):
+        # Check if id is a valid uuid
+        try:
+            uuid.UUID(pk)
+        except:
+            return(Response({
+                'detail': 'Bad request.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
         queryset = Election.objects.all()
         election = get_object_or_404(queryset, pk=pk)
         election.delete()
