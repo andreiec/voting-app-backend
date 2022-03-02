@@ -199,6 +199,14 @@ class GroupSet(ViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getAllUsersFromGroup(request, pk):
+    # Check if id is a valid uuid
+    try:
+        uuid.UUID(pk)
+    except:
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
     profiles = User.objects.filter(group__id=pk)
     serializer = UserSerializer(profiles, many=True)
     return(Response(serializer.data))
@@ -261,3 +269,20 @@ class ElectionSet(ViewSet):
         return(Response({
             'detail': 'Election deleted.',
         }, status=status.HTTP_200_OK))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getAllElectionsFromUser(request, pk):
+    # Check if id is a valid uuid
+    try:
+        uuid.UUID(pk)
+    except:
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+    user = get_object_or_404(User.objects.all(), pk=pk)
+    elections = Election.objects.filter(groups__in=[user.group])
+    serializer = MultipleElectionSerializer(elections, many=True)
+    return(Response(serializer.data))
