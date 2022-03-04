@@ -195,23 +195,6 @@ class GroupSet(ViewSet):
         }, status=status.HTTP_200_OK))
 
 
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def getAllUsersFromGroup(request, pk):
-    # Check if id is a valid uuid
-    try:
-        uuid.UUID(pk)
-    except:
-        return(Response({
-            'detail': 'Bad request.',
-        }, status=status.HTTP_400_BAD_REQUEST))
-
-    profiles = User.objects.filter(group__id=pk)
-    serializer = UserSerializer(profiles, many=True)
-    return(Response(serializer.data))
-
-
 class ElectionSet(ViewSet):
     permission_classes = [ElectionsPermissions]
     # authentication_classes = [TokenAuthentication]
@@ -273,6 +256,22 @@ class ElectionSet(ViewSet):
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def getAllUsersFromGroup(request, pk):
+    # Check if id is a valid uuid
+    try:
+        uuid.UUID(pk)
+    except:
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+    profiles = User.objects.filter(group__id=pk)
+    serializer = UserSerializer(profiles, many=True)
+    return(Response(serializer.data))
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def getAllElectionsFromUser(request, pk):
     # Check if id is a valid uuid
     try:
@@ -286,3 +285,10 @@ def getAllElectionsFromUser(request, pk):
     elections = Election.objects.filter(groups__in=[user.group])
     serializer = MultipleElectionSerializer(elections, many=True)
     return(Response(serializer.data))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def submitVotes(request):
+    print(request.data)
+    return(Response({'detail' : 'Good',}, status=status.HTTP_200_OK))
