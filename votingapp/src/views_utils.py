@@ -1,3 +1,4 @@
+from django.http import Http404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -9,6 +10,14 @@ from src.serializers import UserSerializer, GroupSerializer
 
 
 import uuid
+
+# Helper function to validate uuid
+def validateUUID(id):
+    try:
+        uuid.UUID(id)
+        return True
+    except:
+        return False
 
 
 # Create user from post request

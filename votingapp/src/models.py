@@ -137,8 +137,8 @@ class Option(models.Model):
 
 # Base class for a vote
 class Vote(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
-    option = models.ForeignKey(Option, on_delete=models.CASCADE, null=False, blank=False)
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=False, blank=False)
+    option = models.ForeignKey(Option, on_delete=models.DO_NOTHING, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -146,4 +146,4 @@ class Vote(models.Model):
 
 
     def __str__(self):
-        return self.user + self.option
+        return f'{self.user.first_name} {self.user.last_name}: {self.option.value}'
