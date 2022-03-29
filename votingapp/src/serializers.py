@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Option, Question, User, Group, Election
+from .models import Option, Question, Submission, User, Group, Election
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -55,3 +55,9 @@ class MultipleElectionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Election
         fields = "__all__"
+
+
+class SubmissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Submission
+        fields = ['user']

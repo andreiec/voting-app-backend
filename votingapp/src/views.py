@@ -8,8 +8,8 @@ from rest_framework.authentication import TokenAuthentication
 
 from django.shortcuts import get_object_or_404
 
-from .serializers import SingleElectionSerializer, MultipleElectionSerializer, UserSerializer, GroupSerializer
-from .models import Election, Option, User, Group, Vote
+from .serializers import SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer
+from .models import Election, Option, User, Group, Vote, Submission
 from .views_utils import createUser, createGroup, createElection, validateUUID
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
@@ -238,8 +238,19 @@ def getAllElectionsFromUser(request, pk):
 def submitVotes(request, pk):
     election_data = request.data
     election_votes = election_data['votes']
+
     user_id = election_data['user_id']
+    election_id = election_data['election_id']
+
     user = get_object_or_404(User.objects.all(), pk=user_id)
+    election = get_object_or_404(Election.objects.all(), pk=election_id)
+
+    # Check if user already voted
+    user_has_voted = Submission.objects.filter(user=user_id, election=election_id)
+    if user_has_voted:
+        return(Response({
+            'detail': 'User already voted.'
+        }, status=status.HTTP_409_CONFLICT))
 
     # UUID Validation
     if not validateUUID(user_id) or not validateUUID(pk):
@@ -257,7 +268,7 @@ def submitVotes(request, pk):
                 'detail': 'Bad request.',
             }, status=status.HTTP_400_BAD_REQUEST))
 
-        # Validate option 
+        # Validate option (str - single option, list - multiple option)
         if type(options) is str:
             if not validateUUID(options):
                 return(Response({
@@ -309,9 +320,22 @@ def submitVotes(request, pk):
     # If all validation is met, bulk create
     if bulk_create_is_valid:
         Vote.objects.bulk_create(votes_to_bulk_create)
+        submission = Submission(user=user, election=election)
+        submission.save()
     else:
         return(Response({
             'detail': 'Bad request.',
         }, status=status.HTTP_400_BAD_REQUEST))
 
     return(Response({'detail' : 'Created.',}, status=status.HTTP_201_CREATED))
+
+
+@api_view(['GET'])
+#@permission_classes([IsAuthenticated])
+def getElectionSubmissions(request, pk):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+
+    submissions = Submission.objects.filter(election=pk)
+    serializer = SubmissionSerializer(submissions, many=True)
+    return(Response(serializer.data))
