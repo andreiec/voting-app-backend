@@ -93,10 +93,10 @@ class Election(models.Model):
 
 
     class Meta:
-        ordering = ['created']
+        ordering = ['-created']
 
 
-# Base class for question inside of Election
+# Base class for question inside of Election TODO add minimum and maximum choices
 class Question(models.Model):
     SELECTION_CHOICES = [
         ('single', 'Single Select'),
@@ -109,6 +109,8 @@ class Question(models.Model):
     title = models.CharField(max_length=255, null=True, blank=False)
     description = models.TextField(max_length=4000, null=True, blank=True)
     selection_type = models.CharField(max_length=15, choices=SELECTION_CHOICES, default='single_select')
+    min_selections = models.PositiveIntegerField(null=True, blank=True)
+    max_selections = models.PositiveIntegerField(null=True, blank=True)
     order = models.PositiveSmallIntegerField(blank=False, null=False, default=0, validators=[MaxValueValidator(100)])
 
     def __str__(self):

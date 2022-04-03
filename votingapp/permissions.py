@@ -14,7 +14,6 @@ class UsersPermissions(permissions.BasePermission):
 class ElectionsPermissions(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        print(request.user)
         if view.action in ['retrieve', 'list']:
             return bool(request.user and request.user.is_authenticated)
         elif view.action in ['create', 'destroy', 'update', 'partial_update']:

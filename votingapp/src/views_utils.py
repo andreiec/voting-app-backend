@@ -1,3 +1,6 @@
+from datetime import datetime
+from tokenize import group
+from django import http
 from django.http import Http404
 from django.utils import timezone
 from rest_framework import status
@@ -5,8 +8,8 @@ from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 
-from src.models import User, Group
-from src.serializers import UserSerializer, GroupSerializer
+from src.models import User, Group, Election, Question, Option
+from src.serializers import UserSerializer, GroupSerializer, SingleElectionSerializer
 
 
 import uuid
@@ -116,9 +119,125 @@ def createGroup(request):
     group.save()
 
     serializer = GroupSerializer(group, many=False)
-    return(Response(serializer.data))
+    return(Response(serializer.data, status=status.HTTP_201_CREATED))
 
 
-# Create election from post request
+# Create election from post request TODO change request.data to request.POST
 def createElection(request):
-    return(Response({'detail': 'OK'}, status=status.HTTP_200_OK))
+    data = request.data
+    questions = data.get('questions', False)
+    title = data.get('title', False)
+    description = data.get('description', False)
+    voting_starts_at = data.get('voting_starts_at', False)
+    voting_ends_at = data.get('voting_ends_at', False)
+    number_of_polls = int(data.get('number_of_polls', 0))
+    owner_id = data.get('owner', False)
+    groups_ids = data.get('groups', False)
+
+    # Validate if basic data is provided
+    if not questions or not title or not voting_ends_at or not voting_starts_at or not groups_ids or not owner_id:
+        return(Response({
+            'detail': 'Missing data.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+    # Complete number of polls
+    if not number_of_polls:
+        number_of_polls = len(questions)
+
+    # Get owner
+    owner = get_object_or_404(User.objects.all(), pk=owner_id)
+
+    # Get groups, if lengths of lists are not the same raise bad request
+    groups = Group.objects.filter(id__in=groups_ids).distinct()
+
+    if len(groups) != len(groups_ids):
+        return(Response({
+            'detail': 'Not all groups exists.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+    # Create election object
+    election = Election.objects.create(
+        title=title,
+        description=description,
+        owner=owner,
+        voting_starts_at=datetime.strptime(voting_starts_at, "%Y-%m-%dT%H:%M:%S%z"),
+        voting_ends_at=datetime.strptime(voting_ends_at, "%Y-%m-%dT%H:%M:%S%z"),
+        number_of_polls=number_of_polls,
+    )
+
+    # Add voting groups
+    for group in groups:
+        election.groups.add(group)
+
+    # Lists to hold all created questions and options, in case of invalidity, delete all created objects
+    q_list = []
+    o_list = []
+
+    # Iterate each question and create it
+    for q in questions:
+        question_options = q.get('options', None)
+        question_title = q.get('title', False)
+        question_desc = q.get('description', '')
+        question_select = q.get('selection_type', False)
+        question_min_select = q.get('min_selections', 1)
+        question_max_select = q.get('max_selections', 1 if not question_options else len(question_options))
+        question_order = q.get('order', 0)
+
+        # If a question is not valid, delete all constructed data and return response
+        if not question_title or not question_select or not question_options:
+            election.delete()
+
+            for del_q in q_list:
+                del_q.delete()
+            
+            for del_o in o_list:
+                del_o.delete()
+
+            return(Response({
+                'detail': 'Invalid question.',
+            }, status=status.HTTP_400_BAD_REQUEST))
+
+        # Create question
+        question = Question.objects.create(
+            title=question_title,
+            description=question_desc,
+            selection_type=question_select,
+            min_selections=question_min_select,
+            max_selections=question_max_select,
+            order=question_order,
+            election=election
+        )
+
+        # Append question to question list
+        q_list.append(question)
+
+        # for option in question.options
+        for o in q['options']:
+            option_value = o.get('value', False)
+            option_order = o.get('order', 0)
+            
+            # Delete all data created so far if option not valid
+            if not option_value:
+                election.delete()
+
+                for del_q in q_list:
+                    del_q.delete()
+
+                for del_o in o_list:
+                    del_o.delete()
+
+                return(Response({
+                    'detail': 'Invalid option.',
+                }, status=status.HTTP_400_BAD_REQUEST))
+
+            option = Option.objects.create(
+                value=option_value,
+                order=option_order,
+                question=question
+            )
+
+            o_list.append(option)
+    
+    serializer = SingleElectionSerializer(election ,many=False)
+    
+    return(Response(serializer.data, status=status.HTTP_201_CREATED))
