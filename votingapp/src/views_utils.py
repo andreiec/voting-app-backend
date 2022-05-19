@@ -133,6 +133,7 @@ def createElection(request):
     number_of_polls = int(data.get('number_of_polls', 0))
     owner_id = data.get('owner', False)
     groups_ids = data.get('groups', False)
+    manual_closing = data.get('manual_closing', None);
 
     # Validate if basic data is provided
     if not questions or not title or not voting_ends_at or not voting_starts_at or not groups_ids or not owner_id:
@@ -143,6 +144,12 @@ def createElection(request):
     # Complete number of polls
     if not number_of_polls:
         number_of_polls = len(questions)
+
+    # Check if manual closing was passed
+    if manual_closing is None:
+        return(Response({
+            'detail': 'Missing data.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
     # Get owner
     owner = get_object_or_404(User.objects.all(), pk=owner_id)
@@ -160,6 +167,7 @@ def createElection(request):
         title=title,
         description=description,
         owner=owner,
+        manual_closing=manual_closing,
         voting_starts_at=datetime.strptime(voting_starts_at, "%Y-%m-%dT%H:%M:%S%z"),
         voting_ends_at=datetime.strptime(voting_ends_at, "%Y-%m-%dT%H:%M:%S%z"),
         number_of_polls=number_of_polls,

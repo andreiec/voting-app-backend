@@ -75,7 +75,8 @@ class Election(models.Model):
     owner = models.ForeignKey(User, on_delete=SET_NULL, null=True, blank=True)
     title = models.CharField(max_length=255, null=True, blank=False)
     description = models.TextField(max_length=4000, null=True, blank=True)
-
+    manual_closing = models.BooleanField(default=True)
+    
     voting_starts_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
     voting_ends_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)
     archived_at = models.DateTimeField(auto_now_add=False, default=None, null=True, blank=True)

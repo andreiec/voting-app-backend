@@ -13,7 +13,6 @@ from .models import Election, Option, User, Group, Vote, Submission
 from .views_utils import createUser, createGroup, createElection, validateUUID
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
-import uuid, json
 
 
 @api_view(['GET'])
@@ -331,7 +330,7 @@ def submitVotes(request, pk):
 
 
 @api_view(['GET'])
-#@permission_classes([IsAuthenticated])
+@permission_classes([IsAuthenticated])
 def getElectionSubmissions(request, pk):
     if not validateUUID(pk):
         return HttpResponseNotFound("Not found.")
@@ -339,3 +338,14 @@ def getElectionSubmissions(request, pk):
     submissions = Submission.objects.filter(election=pk)
     serializer = SubmissionSerializer(submissions, many=True)
     return(Response(serializer.data))
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getActiveElections(request):
+    elections = Election.objects.filter(is_active=True)
+    serializer = MultipleElectionSerializer(elections, many=True)
+    return(Response(serializer.data))
+
+
+#TODO close election request

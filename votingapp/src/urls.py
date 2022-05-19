@@ -25,6 +25,7 @@ urlpatterns = [
 
     path('elections/<str:pk>/submit/', views.submitVotes),
     path('elections/<str:pk>/submissions/', views.getElectionSubmissions),
+    path('elections/active/', views.getActiveElections),
 
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
