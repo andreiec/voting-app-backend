@@ -349,3 +349,16 @@ def getActiveElections(request):
 
 
 #TODO close election request
+
+# Get all groups from election
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getGroupsFromElection(request, pk):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+
+    election = get_object_or_404(Election.objects.all(), pk=pk)
+    groups = election.groups.all()
+
+    serializer = GroupSerializer(groups, many=True)
+    return(Response(serializer.data))
