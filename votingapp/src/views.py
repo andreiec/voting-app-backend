@@ -125,10 +125,10 @@ class GroupSet(ViewSet):
         serializer = GroupSerializer(group, data=request.data, partial=True)
 
         # Check if request wants to modify id
-        if request.data.get('id', False):
-            return(Response({
-            'detail': 'Cannot change id.',
-        }, status=status.HTTP_400_BAD_REQUEST))
+        # if request.data.get('id', False):
+        #     return(Response({
+        #     'detail': 'Cannot change id.',
+        # }, status=status.HTTP_400_BAD_REQUEST))
 
         # If serializer is valid
         if serializer.is_valid():
@@ -187,7 +187,30 @@ class ElectionSet(ViewSet):
 
 
     def update(self, request, pk=None):
-        pass
+        if not validateUUID(pk):
+            return HttpResponseNotFound("Not found.")
+
+        queryset = Election.objects.all()
+        election = get_object_or_404(queryset, pk=pk)
+        serializer = SingleElectionSerializer(election, data=request.data, partial=True)
+
+        # Check if request wants to modify id
+        # if request.data.get('id', False):
+        #     return(Response({
+        #     'detail': 'Cannot change id.',
+        # }, status=status.HTTP_400_BAD_REQUEST))
+
+        # If serializer is valid
+        if serializer.is_valid():
+            serializer.save()
+            return(Response({
+                'detail': 'Election updated.',
+            }, status=status.HTTP_200_OK))
+
+        # Serializer was not valid
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
     # Who uses PATCH request anyways?
@@ -348,7 +371,13 @@ def getActiveElections(request):
     return(Response(serializer.data))
 
 
-#TODO close election request
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def getInactiveElections(request):
+    elections = Election.objects.filter(is_active=False)
+    serializer = MultipleElectionSerializer(elections, many=True)
+    return(Response(serializer.data))
+
 
 # Get all groups from election
 @api_view(['GET'])
