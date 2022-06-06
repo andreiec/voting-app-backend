@@ -22,12 +22,15 @@ urlpatterns = [
     path('groups/<str:pk>/users/', views.getAllUsersFromGroup),
 
     path('users/<str:pk>/elections/', views.getAllElectionsFromUser),
+    path('users/<str:pk>/elections/<int:count>', views.getAllElectionsFromUserCount),
 
     path('elections/<str:pk>/submit/', views.submitVotes),
     path('elections/<str:pk>/submissions/', views.getElectionSubmissions),
     path('elections/active/', views.getActiveElections),
     path('elections/inactive/', views.getInactiveElections),
     path('elections/<str:pk>/groups/', views.getGroupsFromElection),
+
+    path('options/<str:pk>/votes/', views.getOptionVotes),
 
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

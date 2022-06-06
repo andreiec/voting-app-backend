@@ -8,7 +8,7 @@ from rest_framework.authentication import TokenAuthentication
 
 from django.shortcuts import get_object_or_404
 
-from .serializers import SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer
+from .serializers import SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer, VoteSerializer
 from .models import Election, Option, User, Group, Vote, Submission
 from .views_utils import createUser, createGroup, createElection, validateUUID
 
@@ -26,7 +26,7 @@ class UserSet(ViewSet):
 
 
     def list(self, request):
-        queryset = User.objects.all()
+        queryset = User.objects.order_by('last_name', 'first_name')
         serializer = UserSerializer(queryset, many=True)
         return(Response(serializer.data))
 
@@ -54,10 +54,10 @@ class UserSet(ViewSet):
         serializer = UserSerializer(user, data=request.data, partial=True)
 
         # Check if request wants to modify id
-        if request.data.get('id', False):
-            return(Response({
-            'detail': 'Cannot change id.',
-        }, status=status.HTTP_400_BAD_REQUEST))
+        # if request.data.get('id', False):
+        #     return(Response({
+        #     'detail': 'Cannot change id.',
+        # }, status=status.HTTP_400_BAD_REQUEST))
 
         # If serializer is valid
         if serializer.is_valid():
@@ -97,7 +97,7 @@ class GroupSet(ViewSet):
 
 
     def list(self, request):
-        queryset = Group.objects.all()
+        queryset = Group.objects.order_by('name')
         serializer = GroupSerializer(queryset, many=True)
         return(Response(serializer.data))
 
@@ -255,6 +255,18 @@ def getAllElectionsFromUser(request, pk):
     return(Response(serializer.data))
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getAllElectionsFromUserCount(request, pk, count):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+
+    user = get_object_or_404(User.objects.all(), pk=pk)
+    elections = Election.objects.filter(groups__in=[user.group])[:count]
+    serializer = MultipleElectionSerializer(elections, many=True)
+    return(Response(serializer.data))
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def submitVotes(request, pk):
@@ -360,6 +372,16 @@ def getElectionSubmissions(request, pk):
 
     submissions = Submission.objects.filter(election=pk)
     serializer = SubmissionSerializer(submissions, many=True)
+    return(Response(serializer.data))
+
+
+@api_view(['GET'])
+def getOptionVotes(request, pk):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+    
+    votes = Vote.objects.filter(option=pk)
+    serializer = VoteSerializer(votes, many=True)
     return(Response(serializer.data))
 
 

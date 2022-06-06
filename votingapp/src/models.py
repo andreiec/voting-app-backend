@@ -141,7 +141,7 @@ class Option(models.Model):
 # Base class for a vote
 class Vote(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=False, blank=False)
-    option = models.ForeignKey(Option, on_delete=models.DO_NOTHING, null=False, blank=False)
+    option = models.ForeignKey(Option, on_delete=models.CASCADE, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -155,7 +155,7 @@ class Vote(models.Model):
 # Base class for a submission (Used to hold information if an user voted on an election)
 class Submission(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=False, blank=False)
-    election = models.ForeignKey(Election, on_delete=models.DO_NOTHING, null=False, blank=False)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

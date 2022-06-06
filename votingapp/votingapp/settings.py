@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 from pathlib import Path
 from telnetlib import AUTHENTICATION
 from datetime import timedelta
+import votingapp.variables as variables
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,17 +23,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ok66+y*f063t$5xds96lsoi++-w&xym=nl8308*ovsfpc1&46y'
+SECRET_KEY = variables.DJANGO_SECRET_KEY
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = []
 
-CORS_ALLOWED_ORIGINS = [
-    "http://127.0.0.1:3000",
-    "http://localhost:3000",
-]
+CORS_ALLOWED_ORIGINS = variables.CORS_ALLOWED_ORIGINS
 
 
 # VERY IMPORTANT FOR SECURITY, CHANGE WHEN GOING TO PRODUCTION
@@ -135,11 +133,11 @@ WSGI_APPLICATION = 'votingapp.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'votingapp',
+        'NAME': variables.DB_NAME,
         'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': 'andreiec',
-        'PASSWORD': 'panda11022001',
+        'USER': variables.DB_USER,
+        'PASSWORD': variables.DB_PASS,
     }
 }
 
@@ -173,6 +171,12 @@ USE_I18N = True
 
 USE_TZ = True
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = variables.EMAIL_USER
+EMAIL_HOST_PASSWORD = variables.EMAIL_PASS
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/

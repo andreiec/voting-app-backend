@@ -1,7 +1,4 @@
 from datetime import datetime
-from tokenize import group
-from django import http
-from django.http import Http404
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.response import Response
@@ -27,17 +24,21 @@ def validateUUID(id):
 def createUser(request):
 
     # Get data from post request
-    data = request.POST
+    data = request.data
     email = data.get('email', None)
     password = data.get('password', None)
     group = data.get('group', None)
     is_staff = data.get('is_staff', False)
 
-    # Check if data contains email and password
-    if not email or not password:
+    # Check if data contains email
+    if not email:
         return(Response({
             'detail': 'Missing data from sender.',
         }, status=status.HTTP_400_BAD_REQUEST))
+
+    # If not password, create random
+    # if not password:
+    #    password = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(8))
 
     # Check if mail already exists in db
     if User.objects.filter(email=email).exists():
@@ -52,7 +53,7 @@ def createUser(request):
         'last_name': data.get('last_name', ""),
         'date_joined': str(timezone.now()),
         'last_login': str(timezone.now()),
-        'is_staff': is_staff == "True",
+        'is_staff': data.get('is_staff', False),
     }
 
     # Get group if exists
@@ -86,7 +87,9 @@ def createUser(request):
         )
 
         # Set user password and save
-        user.set_password(password)
+        if password:
+            user.set_password(password)
+
         user.save()
 
         return(Response({
@@ -100,7 +103,7 @@ def createUser(request):
 
 
 def createGroup(request):
-    data = request.POST
+    data = request.data
     name = data.get('name', False)
     description = data.get('description', "")
     color = data.get('color', "#FFFFFF")
