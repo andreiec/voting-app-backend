@@ -1,6 +1,6 @@
 from dataclasses import field
 from rest_framework import serializers
-from .models import Option, Question, Submission, User, Group, Election, Vote
+from .models import ClosedElection, Option, Question, Submission, User, Group, Election, Vote
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -57,6 +57,11 @@ class MultipleElectionSerializer(serializers.ModelSerializer):
         model = Election
         fields = "__all__"
 
+
+class ClosedElectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ClosedElection
+        fields = "__all__"
 
 
 # Base serializer for submission

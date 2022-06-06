@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 
-from src.models import User, Group, Election, Question, Option
+from src.models import User, Group, Election, Question, Option, Vote
 from src.serializers import UserSerializer, GroupSerializer, SingleElectionSerializer
 
 
@@ -252,3 +252,13 @@ def createElection(request):
     serializer = SingleElectionSerializer(election ,many=False)
     
     return(Response(serializer.data, status=status.HTTP_201_CREATED))
+
+
+def createClosedElection(request):
+    election_data = request.data
+
+    submitted_votes = Vote.objects.filter(id=election_data.id)
+
+    print(submitted_votes)
+
+    closed_election = ClosedElection(data=election_data)

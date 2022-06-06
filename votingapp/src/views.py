@@ -8,8 +8,8 @@ from rest_framework.authentication import TokenAuthentication
 
 from django.shortcuts import get_object_or_404
 
-from .serializers import SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer, VoteSerializer
-from .models import Election, Option, User, Group, Vote, Submission
+from .serializers import ClosedElectionSerializer, SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer, VoteSerializer
+from .models import ClosedElection, Election, Option, User, Group, Vote, Submission
 from .views_utils import createUser, createGroup, createElection, validateUUID
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
@@ -52,12 +52,6 @@ class UserSet(ViewSet):
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         serializer = UserSerializer(user, data=request.data, partial=True)
-
-        # Check if request wants to modify id
-        # if request.data.get('id', False):
-        #     return(Response({
-        #     'detail': 'Cannot change id.',
-        # }, status=status.HTTP_400_BAD_REQUEST))
 
         # If serializer is valid
         if serializer.is_valid():
@@ -124,12 +118,6 @@ class GroupSet(ViewSet):
         group = get_object_or_404(queryset, pk=pk)
         serializer = GroupSerializer(group, data=request.data, partial=True)
 
-        # Check if request wants to modify id
-        # if request.data.get('id', False):
-        #     return(Response({
-        #     'detail': 'Cannot change id.',
-        # }, status=status.HTTP_400_BAD_REQUEST))
-
         # If serializer is valid
         if serializer.is_valid():
             serializer.save()
@@ -194,12 +182,6 @@ class ElectionSet(ViewSet):
         election = get_object_or_404(queryset, pk=pk)
         serializer = SingleElectionSerializer(election, data=request.data, partial=True)
 
-        # Check if request wants to modify id
-        # if request.data.get('id', False):
-        #     return(Response({
-        #     'detail': 'Cannot change id.',
-        # }, status=status.HTTP_400_BAD_REQUEST))
-
         # If serializer is valid
         if serializer.is_valid():
             serializer.save()
@@ -230,6 +212,57 @@ class ElectionSet(ViewSet):
         return(Response({
             'detail': 'Election deleted.',
         }, status=status.HTTP_200_OK))
+
+
+class ClosedElectionSet(ViewSet):
+    permission_classes = [ElectionsPermissions]
+
+
+    def list(self, request):
+        queryset = ClosedElection.objects.all()
+        serializer = ClosedElectionSerializer(queryset, many=True)
+        return(Response(serializer.data))
+
+
+    def create(self, request):
+        return createClosedElection(request)
+
+
+    def retrieve(self, request, pk=None):
+        if not validateUUID(pk):
+            return HttpResponseNotFound("Not found.")
+
+        queryset = ClosedElection.objects.all()
+        election = get_object_or_404(queryset, pk=pk)
+        serializer = ClosedElectionSerializer(election, many=False)
+        return(Response(serializer.data))
+
+
+    def update(self, request, pk=None):
+        # Cannot update
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+
+    # Who uses PATCH request anyways?
+    def partial_update(self, request, pk=None):
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+
+    def destroy(self, request, pk=None):
+        if not validateUUID(pk):
+            return HttpResponseNotFound("Not found.")
+
+        queryset = ClosedElection.objects.all()
+        election = get_object_or_404(queryset, pk=pk)
+        election.delete()
+        return(Response({
+            'detail': 'Archived election deleted.',
+        }, status=status.HTTP_200_OK))
+
 
 
 @api_view(['GET'])
@@ -335,7 +368,7 @@ def submitVotes(request, pk):
                 bulk_create_is_valid = False
                 break
 
-            vote = Vote(user=user, option=option)
+            vote = Vote(user=user, option=option, election=election)
             votes_to_bulk_create.append(vote)
 
         # If question was multiple select (returned option would be a list of str)
@@ -348,7 +381,7 @@ def submitVotes(request, pk):
                     bulk_create_is_valid = False
                     break
 
-                vote = Vote(user=user, option=option)
+                vote = Vote(user=user, option=option, election=election)
                 votes_to_bulk_create.append(vote)
 
     # If all validation is met, bulk create

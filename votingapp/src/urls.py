@@ -15,6 +15,7 @@ router = DefaultRouter()
 router.register('users', views.UserSet, basename='user')
 router.register('groups', views.GroupSet, basename='group')
 router.register('elections', views.ElectionSet, basename='election')
+router.register('closed-elections', views.ClosedElectionSet, basename='closed-election')
 
 urlpatterns = [
     path('', views.baseResponse),
