@@ -140,7 +140,7 @@ class Option(models.Model):
 
 # Base class for a vote
 class Vote(models.Model):
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     option = models.ForeignKey(Option, on_delete=models.CASCADE, null=False, blank=False)
     election = models.ForeignKey(Election, on_delete=models.CASCADE, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
@@ -155,7 +155,7 @@ class Vote(models.Model):
 
 # Base class for a submission (Used to hold information if an user voted on an election)
 class Submission(models.Model):
-    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=False, blank=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
     election = models.ForeignKey(Election, on_delete=models.CASCADE, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
 
@@ -170,6 +170,10 @@ class Submission(models.Model):
 # Class that stores json of vote when it becomes inactive
 class ClosedElection(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
+    election = models.ForeignKey(Election, on_delete=models.CASCADE, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
 
     data = models.JSONField()
+
+    def __str__(self):
+        return f'{self.election.title}'

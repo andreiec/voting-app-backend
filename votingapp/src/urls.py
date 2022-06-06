@@ -30,6 +30,7 @@ urlpatterns = [
     path('elections/active/', views.getActiveElections),
     path('elections/inactive/', views.getInactiveElections),
     path('elections/<str:pk>/groups/', views.getGroupsFromElection),
+    path('elections/<str:pk>/close/', views.closeElection),
 
     path('options/<str:pk>/votes/', views.getOptionVotes),
 

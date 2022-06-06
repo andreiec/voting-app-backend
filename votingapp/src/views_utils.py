@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 
-from src.models import User, Group, Election, Question, Option, Vote
+from src.models import User, Group, Election, Question, Option, Vote, ClosedElection
 from src.serializers import UserSerializer, GroupSerializer, SingleElectionSerializer
 
 
@@ -53,7 +53,7 @@ def createUser(request):
         'last_name': data.get('last_name', ""),
         'date_joined': str(timezone.now()),
         'last_login': str(timezone.now()),
-        'is_staff': data.get('is_staff', False),
+        'is_staff': is_staff,
     }
 
     # Get group if exists
@@ -256,6 +256,8 @@ def createElection(request):
 
 def createClosedElection(request):
     election_data = request.data
+    
+    
 
     submitted_votes = Vote.objects.filter(id=election_data.id)
 

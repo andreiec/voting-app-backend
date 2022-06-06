@@ -1,3 +1,4 @@
+from re import M
 from django.http import Http404, HttpResponseNotFound
 from rest_framework import status
 from rest_framework.response import Response
@@ -5,12 +6,13 @@ from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.viewsets import ViewSet
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.renderers import JSONRenderer
 
 from django.shortcuts import get_object_or_404
 
 from .serializers import ClosedElectionSerializer, SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer, VoteSerializer
 from .models import ClosedElection, Election, Option, User, Group, Vote, Submission
-from .views_utils import createUser, createGroup, createElection, validateUUID
+from .views_utils import createUser, createGroup, createClosedElection, createElection, validateUUID
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
 
@@ -225,7 +227,10 @@ class ClosedElectionSet(ViewSet):
 
 
     def create(self, request):
-        return createClosedElection(request)
+        # Cannot create
+        return(Response({
+            'detail': 'Bad request.',
+        }, status=status.HTTP_400_BAD_REQUEST))
 
 
     def retrieve(self, request, pk=None):
@@ -446,3 +451,89 @@ def getGroupsFromElection(request, pk):
 
     serializer = GroupSerializer(groups, many=True)
     return(Response(serializer.data))
+
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def closeElection(request, pk):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+
+    # Get election and groups
+    election = get_object_or_404(Election.objects.all(), pk=pk)
+
+    if election.is_archived:
+        return(Response({
+            'detail': 'Vote already closed.',
+        }, status=status.HTTP_400_BAD_REQUEST))
+
+    groups = election.groups.all()
+
+    # Count votes
+    votes = Vote.objects.filter(election__id=election.id)
+    number_of_submissions = Submission.objects.filter(election__id=election.id).count()
+
+    # Serialize election
+    serializer = SingleElectionSerializer(election, many=False).data
+
+    # Count votes and save as follows -> (key) option_id: (value) number of votes for this option
+    counted_votes = {}
+
+    for vote in votes:
+        option_id = str(vote.option.id)
+
+        if option_id not in counted_votes:
+            counted_votes[option_id] = 1
+        else:
+            counted_votes[option_id] += 1
+
+    # Construct final json
+    final_data = {
+        'title': serializer.get('title'),
+        'description': serializer.get('description'),
+        'number_of_polls': serializer.get('number_of_polls'),
+        "voting_starts_at": serializer.get('voting_starts_at'),
+        "voting_ends_at": serializer.get('voting_ends_at'),
+        'submitted_votes': number_of_submissions,
+        'questions': [],
+        'groups': [{'id': str(group.id), 'name': group.name, 'description': group.description} for group in groups]
+    }
+
+    # Iterate each question and create it, iterate each option and count votes
+    for question in serializer.get('questions'):
+        question_data = {
+            'title': question.get('title'),
+            'description': question.get('description'),
+            "selection_type": question.get("selection_type"),
+            "min_selections": question.get('min_selections'),
+            "max_selections": question.get('max_selections'),
+            "order": question.get('order'),
+            'options': []
+        }
+
+        for option in question.get('options'):
+            option_data = {
+                "value": option.get('value'),
+                "order": option.get('order')
+            }
+
+            if option.get('id') in counted_votes:
+                option_data['vote_count'] = counted_votes[option.get('id')]
+            else:
+                option_data['vote_count'] = 0
+            
+            question_data['options'].append(option_data)
+
+        final_data['questions'].append(question_data)
+
+    closed_election = ClosedElection(election=election, data=final_data)
+    closed_election.save()
+
+    election.is_active = False
+    election.is_archived = True
+    election.accepts_votes = False
+    election.save()
+
+    return(Response({
+        'detail': 'Vote closed.',
+    }, status=status.HTTP_200_OK))
