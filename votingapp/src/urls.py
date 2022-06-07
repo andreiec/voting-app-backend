@@ -24,6 +24,7 @@ urlpatterns = [
 
     path('users/<str:pk>/elections/', views.getAllElectionsFromUser),
     path('users/<str:pk>/elections/<int:count>', views.getAllElectionsFromUserCount),
+    path('users/<str:pk>/change-password/', views.changeUserPassword),
 
     path('elections/<str:pk>/submit/', views.submitVotes),
     path('elections/<str:pk>/submissions/', views.getElectionSubmissions),

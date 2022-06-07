@@ -558,3 +558,21 @@ def closeElection(request, pk):
         'detail': 'Vote closed.',
         'vote_id': str(closed_election.id),
     }, status=status.HTTP_200_OK))
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def changeUserPassword(request, pk):
+    if not validateUUID(pk):
+        return HttpResponseNotFound("Not found.")
+    
+
+    new_password = request.data['password']
+
+    user = get_object_or_404(User.objects.all(), pk=pk)
+    user.set_password(new_password)
+    user.save()
+
+    return(Response({
+        'detail': 'Password changed.',
+    }, status=status.HTTP_200_OK))
