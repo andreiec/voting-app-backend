@@ -51,21 +51,41 @@ class UserSet(ViewSet):
         if not validateUUID(pk):
             return HttpResponseNotFound("Not found.")
 
+        data = request.data
+
+        first_name = data.get('first_name', None)
+        last_name = data.get('last_name', None)
+        email = data.get('email', None)
+        is_staff = data.get('is_staff', False)
+        group_id = data.get('group', None)
+
+        group = None
+
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
-        serializer = UserSerializer(user, data=request.data, partial=True)
 
-        # If serializer is valid
-        if serializer.is_valid():
-            serializer.save()
+        if group_id:
+            group = get_object_or_404(Group.objects.all(), pk=group_id)
+
+
+        if not first_name or not last_name or not email:
             return(Response({
-                'detail': 'User updated.',
-            }, status=status.HTTP_200_OK))
+                'detail': 'Missing data from sender.',
+            }, status=status.HTTP_400_BAD_REQUEST))
 
-        # Serializer was not valid
+        user.first_name = first_name
+        user.last_name = last_name
+        user.email = email
+        user.is_staff = is_staff
+        user.is_admin = is_staff
+        user.group = group
+
+        user.save()
+
         return(Response({
-            'detail': 'Bad request.',
-        }, status=status.HTTP_400_BAD_REQUEST))
+            'detail': 'User updated.',
+        }, status=status.HTTP_200_OK))
+
 
 
     # Who uses PATCH request anyways?
@@ -536,4 +556,5 @@ def closeElection(request, pk):
 
     return(Response({
         'detail': 'Vote closed.',
+        'vote_id': str(closed_election.id),
     }, status=status.HTTP_200_OK))
