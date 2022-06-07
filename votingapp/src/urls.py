@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 
 from rest_framework.routers import DefaultRouter
 
@@ -33,6 +33,8 @@ urlpatterns = [
     path('elections/<str:pk>/close/', views.closeElection),
 
     path('options/<str:pk>/votes/', views.getOptionVotes),
+
+    re_path(r'^password_reset/', include('django_rest_passwordreset.urls', namespace='password_reset')),
 
     path('auth/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

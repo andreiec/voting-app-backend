@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'src',
     
     'rest_framework',
+    'django_rest_passwordreset',
     'colorfield',
     'corsheaders'
 ]
