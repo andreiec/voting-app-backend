@@ -116,6 +116,12 @@ class UserSet(ViewSet):
 
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
+
+        if user.is_superuser:
+            return(Response({
+                'detail': 'Cannot delete root admin.'
+            }, status=status.HTTP_406_NOT_ACCEPTABLE))     
+
         user.delete()
         return(Response({
             'detail': 'User deleted.',
