@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404
 
 from .serializers import ClosedElectionSerializer, SingleElectionSerializer, MultipleElectionSerializer, SubmissionSerializer, UserSerializer, GroupSerializer, VoteSerializer
 from .models import ClosedElection, Election, Option, User, Group, Vote, Submission
-from .views_utils import createUser, createGroup, createClosedElection, createElection, validateUUID
+from .views_utils import createUser, createGroup, createElection, validateUUID, checkIfActiveVotes
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
 
@@ -34,6 +34,11 @@ class UserSet(ViewSet):
 
 
     def create(self, request):
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))
+
         return createUser(request)
 
 
@@ -50,6 +55,11 @@ class UserSet(ViewSet):
     def update(self, request, pk=None):
         if not validateUUID(pk):
             return HttpResponseNotFound("Not found.")
+        
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))
 
         data = request.data
 
@@ -99,6 +109,11 @@ class UserSet(ViewSet):
         if not validateUUID(pk):
             return HttpResponseNotFound("Not found.")
 
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))        
+
         queryset = User.objects.all()
         user = get_object_or_404(queryset, pk=pk)
         user.delete()
@@ -119,6 +134,11 @@ class GroupSet(ViewSet):
 
 
     def create(self, request):
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))    
+
         return createGroup(request)
 
 
@@ -135,6 +155,11 @@ class GroupSet(ViewSet):
     def update(self, request, pk=None):
         if not validateUUID(pk):
             return HttpResponseNotFound("Not found.")
+
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))    
 
         queryset = Group.objects.all()
         group = get_object_or_404(queryset, pk=pk)
@@ -163,6 +188,11 @@ class GroupSet(ViewSet):
     def destroy(self, request, pk=None):
         if not validateUUID(pk):
             return HttpResponseNotFound("Not found.")
+
+        if checkIfActiveVotes():
+            return(Response({
+                'detail': 'Cannot change while active votes.'
+            }, status=status.HTTP_409_CONFLICT))    
 
         queryset = Group.objects.all()
         group = get_object_or_404(queryset, pk=pk)
@@ -339,6 +369,7 @@ def submitVotes(request, pk):
 
     # Check if user already voted
     user_has_voted = Submission.objects.filter(user=user_id, election=election_id)
+    
     if user_has_voted:
         return(Response({
             'detail': 'User already voted.'
@@ -360,23 +391,11 @@ def submitVotes(request, pk):
                 'detail': 'Bad request.',
             }, status=status.HTTP_400_BAD_REQUEST))
 
-        # Validate option (str - single option, list - multiple option)
-        if type(options) is str:
-            if not validateUUID(options):
+        for option in options:
+            if not validateUUID(option):
                 return(Response({
                     'detail': 'Bad request.',
                 }, status=status.HTTP_400_BAD_REQUEST))
-                
-        elif type(options) is list:
-            for option in options:
-                if not validateUUID(option):
-                    return(Response({
-                        'detail': 'Bad request.',
-                    }, status=status.HTTP_400_BAD_REQUEST))
-        else:
-            return(Response({
-                'detail': 'Bad request.',
-            }, status=status.HTTP_400_BAD_REQUEST))
 
     # Store all votes in a list to do a bulk create
     votes_to_bulk_create = []
@@ -384,9 +403,8 @@ def submitVotes(request, pk):
 
     # Adding votes to database
     for question_id in election_votes:
-        # If question was single select (returned option would be a single str)
-        if type(election_votes[question_id]) is str:
-            option = Option.objects.get(pk=election_votes[question_id])
+        for option_id in election_votes[question_id]:
+            option = Option.objects.get(pk=option_id)
 
             # If an option was not found in the db don't validate
             if not option:
@@ -395,19 +413,6 @@ def submitVotes(request, pk):
 
             vote = Vote(user=user, option=option, election=election)
             votes_to_bulk_create.append(vote)
-
-        # If question was multiple select (returned option would be a list of str)
-        elif type(election_votes[question_id]) is list:
-            for option_id in election_votes[question_id]:
-                option = Option.objects.get(pk=option_id)
-
-                # If an option was not found in the db don't validate
-                if not option:
-                    bulk_create_is_valid = False
-                    break
-
-                vote = Vote(user=user, option=option, election=election)
-                votes_to_bulk_create.append(vote)
 
     # If all validation is met, bulk create
     if bulk_create_is_valid:

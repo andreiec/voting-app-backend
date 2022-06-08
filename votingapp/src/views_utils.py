@@ -20,6 +20,11 @@ def validateUUID(id):
         return False
 
 
+# Helper function to check if there are any active votes
+def checkIfActiveVotes():
+    return Election.objects.filter(is_archived=False).exists()
+
+
 # Create user from post request
 def createUser(request):
 
