@@ -18,8 +18,6 @@ router.register('elections', views.ElectionSet, basename='election')
 router.register('archived-elections', views.ClosedElectionSet, basename='closed-election')
 
 urlpatterns = [
-    path('', views.baseResponse),
-
     path('groups/<str:pk>/users/', views.getAllUsersFromGroup),
 
     path('users/<str:pk>/elections/', views.getAllElectionsFromUser),

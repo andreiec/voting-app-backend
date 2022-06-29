@@ -1,12 +1,9 @@
-from re import M
-from django.http import Http404, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.viewsets import ViewSet
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.renderers import JSONRenderer
 
 from django.shortcuts import get_object_or_404
 
@@ -15,11 +12,8 @@ from .models import ClosedElection, Election, Option, User, Group, Vote, Submiss
 from .views_utils import createUser, createGroup, createElection, validateUUID, checkIfActiveVotes
 
 from permissions import UsersPermissions, ElectionsPermissions, GroupsPermissions
-
-
-@api_view(['GET'])
-def baseResponse(request):
-    return Response()
+from hashlib import sha256
+import datetime
 
 
 # User create, read, update, delete endpoints 
@@ -369,6 +363,15 @@ def submitVotes(request, pk):
 
     user_id = election_data['user_id']
     election_id = election_data['election_id']
+
+    sent_hash = election_data['hash']
+    local_hash = sha256(f"{user_id}.{election_id}.{election_data['sent_on']}".encode('utf-8')).hexdigest()
+
+    # Check if hash match
+    if sent_hash != local_hash:
+        return(Response({
+            'detail': 'Hash not valid.'
+        }, status=status.HTTP_409_CONFLICT))
 
     user = get_object_or_404(User.objects.all(), pk=user_id)
     election = get_object_or_404(Election.objects.all(), pk=election_id)
