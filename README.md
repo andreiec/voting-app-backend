@@ -1,2 +1,2 @@
 # voting-app-backend
-Backend for the Licence project. Made in Django with MongoDB.
+Backend for the Licence project. Made in Django with MySQL.
